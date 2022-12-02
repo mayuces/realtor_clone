@@ -24,7 +24,8 @@ export default function Header() {
         </div>
         <div className="menu">
           <ul className='flex space-x-10'>
-            <li className={`py-3 
+            <li 
+              className={`py-3 
               text-sn 
               font-semibold 
               text-gray-400 
@@ -36,7 +37,8 @@ export default function Header() {
             >
                 Home
             </li>
-            <li className={`py-3 
+            <li 
+              className={`py-3 
               text-sn 
               font-semibold 
               text-gray-400 
@@ -48,7 +50,8 @@ export default function Header() {
             >
                 Offers
             </li>
-            <li className={`py-3 
+            <li 
+              className={`py-3 
               text-sn 
               font-semibold 
               text-gray-400 
