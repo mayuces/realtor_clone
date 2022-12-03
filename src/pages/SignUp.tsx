@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { FormEvent, useState } from 'react'
 import { AiFillEyeInvisible, AiFillEye } from 'react-icons/ai';
 import { Link, useNavigate } from 'react-router-dom';
 import OAuth from '../components/OAuth';
@@ -6,6 +6,8 @@ import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase
 import { db } from '../firebase';
 import { serverTimestamp, setDoc, doc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
+
+
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,10 +17,10 @@ export default function SignUp() {
     password: '',
   });
 
-  const { name, email, password} = formData;
+  const { name, email, password } = formData;
   const navigate = useNavigate();
   
-  const onChange = (event) => {
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prevState) => ({
       ...prevState,
       [event.target.id]: event.target.value,
@@ -28,9 +30,11 @@ export default function SignUp() {
   const passwordVisibleHandler = () => {
     setShowPassword((prevState) => !prevState);
   };
+        // const formDataCopy = {...formData};
+      // delete formDataCopy.password;
+
   
-  
-  const onSubmit = async (event) => {
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   
     const auth = getAuth();
@@ -41,16 +45,18 @@ export default function SignUp() {
         password,
       );
 
-      updateProfile(auth.currentUser, {
-        displayName: name
-      });
+      if (auth.currentUser) {
+        updateProfile(auth.currentUser, {
+          displayName: name
+        });
+      }
 
       const user = userCredential.user;
-      const formDataCopy = {...formData};
-      delete formDataCopy.password;
-      formDataCopy.timestamp = serverTimestamp();
 
-      await setDoc(doc(db, 'users', user.uid), formDataCopy);
+      const formDataCopy = (({ name, email }) => ({ name, email }))(formData);
+      const formDataCopyWithTimeStamp = { ...formDataCopy, timestamp: serverTimestamp()};
+
+      await setDoc(doc(db, 'users', user.uid), formDataCopyWithTimeStamp);
       toast.success('Sing up was successful');
       navigate('/');
 

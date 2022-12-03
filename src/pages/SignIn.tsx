@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { FormEvent, useState } from 'react'
 import { AiFillEyeInvisible, AiFillEye } from 'react-icons/ai';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import OAuth from '../components/OAuth';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { toast } from 'react-toastify';
 
 export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +13,8 @@ export default function SignIn() {
   });
 
   const { email, password} = formData;
+  const navigate = useNavigate();
+
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prevState) => ({
@@ -23,6 +27,20 @@ export default function SignIn() {
     setShowPassword((prevState) => !prevState);
   };
 
+ const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  try {
+    const auth = getAuth();
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    if (userCredential.user) {
+      navigate("/");
+    }
+  } catch (error) {
+    toast.error('Bad user credentials')
+  }
+ };
+
+ 
   return (
     <section>
       <h1
@@ -63,12 +81,13 @@ export default function SignIn() {
         >
           <form 
             action=""
+            onSubmit={onSubmit}
           >
             <input
               type='email'
               id='email'
               value={email}
-              onChange={(event) => onChange(event)}
+              onChange={onChange}
               placeholder='Email Address'
               className='w-full
               px-4 
@@ -86,7 +105,7 @@ export default function SignIn() {
                 type={showPassword ? 'text' : 'password'}
                 id='password'
                 value={password}
-                onChange={(event) => onChange(event)}
+                onChange={onChange}
                 placeholder='Password'
                 className='w-full
                 px-4 
@@ -101,12 +120,12 @@ export default function SignIn() {
               {showPassword ? (
                 <AiFillEyeInvisible 
                   className='absolute right-3 top-3 text-xl cursor-pointer'
-                  onClick={() => passwordVisibleHandler()} 
+                  onClick={passwordVisibleHandler} 
                 />
                 ) : (
                 <AiFillEye 
                   className='absolute right-3 top-3 text-xl cursor-pointer'
-                  onClick={() => passwordVisibleHandler()}
+                  onClick={passwordVisibleHandler}
                 />
               )}
             </div>
