@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { AiFillEyeInvisible, AiFillEye } from 'react-icons/ai';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import OAuth from '../components/OAuth';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { db } from '../firebase';
+import { serverTimestamp, setDoc, doc } from 'firebase/firestore';
+import { toast } from 'react-toastify';
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,17 +16,49 @@ export default function SignUp() {
   });
 
   const { name, email, password} = formData;
-
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const navigate = useNavigate();
+  
+  const onChange = (event) => {
     setFormData((prevState) => ({
       ...prevState,
       [event.target.id]: event.target.value,
     }))
   };
-
+  
   const passwordVisibleHandler = () => {
     setShowPassword((prevState) => !prevState);
   };
+  
+  
+  const onSubmit = async (event) => {
+    event.preventDefault();
+  
+    const auth = getAuth();
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, 
+        email, 
+        password,
+      );
+
+      updateProfile(auth.currentUser, {
+        displayName: name
+      });
+
+      const user = userCredential.user;
+      const formDataCopy = {...formData};
+      delete formDataCopy.password;
+      formDataCopy.timestamp = serverTimestamp();
+
+      await setDoc(doc(db, 'users', user.uid), formDataCopy);
+      toast.success('Sing up was successful');
+      navigate('/');
+
+    } catch (error) {
+      toast.error('Something went wrong with the registration');
+    }
+  };
+  
 
   return (
     <section>
@@ -63,13 +99,13 @@ export default function SignUp() {
           lg:ml-20'
         >
           <form 
-            action=""
+            onSubmit={onSubmit}
           >
             <input
               type='text'
               id='name'
               value={name}
-              onChange={(event) => onChange(event)}
+              onChange={onChange}
               placeholder='Full name'
               className='w-full
               px-4 
@@ -104,7 +140,7 @@ export default function SignUp() {
                 type={showPassword ? 'text' : 'password'}
                 id='password'
                 value={password}
-                onChange={(event) => onChange(event)}
+                onChange={onChange}
                 placeholder='Password'
                 className='w-full
                 px-4 
