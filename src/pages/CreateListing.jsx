@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 export default function CreateListing() {
   const navigate = useNavigate();
   const auth = getAuth();
-  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
@@ -53,9 +53,133 @@ export default function CreateListing() {
     images,
   } = formData;
 
-  const onChange = () => {
-
+  const onChange = (event) => {
+    let boolean = null;
+    if (event.target.value === 'true') {
+      boolean = true;
+    }
+    if (event.target.value === 'false') {
+      boolean = false;
+    }
+    // Files
+    if (event.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        images: event.target.files,
+      }));
+    }
+    // Text / Boolean / Number
+    if (!event.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [event.target.id]: boolean ?? event.target.value,
+      }));
+    }
   };
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    if (Number(discountedPrice) >= Number(regularPrice)) {
+      setLoading(false);
+      toast.error('Discounted price need to be less than regular price');
+      return;
+    }
+    if (images.length > 6) {
+      setLoading(false);
+      toast.error('Maximum 6 images are allowed');
+      return;
+    }
+    let geolocation = {};
+    let location;
+    if (geolocationEnabled) {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`
+      );
+      const data = await response.json();
+      console.log(data);
+      geolocation.lat = data.results[0]?.geometry.location.lat ?? 0;
+      geolocation.lng = data.results[0]?.geometry.location.lng ?? 0;
+
+      location = data.status === "ZERO_RESULTS" && undefined;
+
+      if (location === undefined) {
+        setLoading(false);
+        toast.error("please enter a correct address");
+        return;
+      }
+    } else {
+      geolocation.lat = latitude;
+      geolocation.lng = longitude;
+    }
+
+    async function storeImage(image) {
+      return new Promise((resolve, reject) => {
+        const storage = getStorage();
+        const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+        const storageRef = ref(storage, filename);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            // Observe state change events such as progress, pause, and resume
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+            switch (snapshot.state) {
+              case "paused":
+                console.log("Upload is paused");
+                break;
+              case "running":
+                console.log("Upload is running");
+                break;
+              default:
+            }
+          },
+          (error) => {
+            // Handle unsuccessful uploads
+            reject(error);
+          },
+          () => {
+            // Handle successful uploads on complete
+            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              resolve(downloadURL);
+            });
+          }
+        );
+      });
+    }
+
+    const imgUrls = await Promise.all(
+      [...images].map((image) => storeImage(image))
+    ).catch((error) => {
+      setLoading(false);
+      toast.error("Images not uploaded");
+      return;
+    });
+
+    const formDataCopy = {
+      ...formData,
+      imgUrls,
+      geolocation,
+      timestamp: serverTimestamp(),
+      userRef: auth.currentUser.uid,
+    };
+    delete formDataCopy.images;
+    !formDataCopy.offer && delete formDataCopy.discountedPrice;
+    delete formDataCopy.latitude;
+    delete formDataCopy.longitude;
+    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+    setLoading(false);
+    toast.success("Listing created");
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`);
+  };
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <main
@@ -64,7 +188,10 @@ export default function CreateListing() {
       <h1 className='text-3xl text-center mt-6 font-bold'>
         Create Listing
       </h1>
-      <form action="">
+      <form 
+        action=""
+        onSubmit={onSubmit}
+      >
         <p className='text-lg mt-6 font font-semibold'>
           Sell / Rent
         </p>
@@ -86,7 +213,7 @@ export default function CreateListing() {
             <button 
               type='button'
               id='type'
-              value='sale'
+              value='rent'
               onClick={onChange} 
               className={`px-7 py-3 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
@@ -114,20 +241,20 @@ export default function CreateListing() {
             duration-150 ease-out focus:text-gray-700
             focus:bg-white focus:border-slate-600 mb-6'
         />
-               <div className="flex space-x-6 mb-6">
-          <div>
-            <p className="text-lg font-semibold">Beds</p>
-            <input
-              type="number"
-              id="bedrooms"
-              value={bedrooms}
-              onChange={onChange}
-              min="1"
-              max="50"
-              required
-              className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
-            />
-          </div>
+          <div className="flex space-x-6 mb-6">
+            <div>
+              <p className="text-lg font-semibold">Beds</p>
+              <input
+                type="number"
+                id="bedrooms"
+                value={bedrooms}
+                onChange={onChange}
+                min="1"
+                max="50"
+                required
+                className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 text-center"
+              />
+            </div>
           <div>
             <p className="text-lg font-semibold">Baths</p>
             <input
@@ -211,7 +338,6 @@ export default function CreateListing() {
                 id="latitude"
                 value={latitude}
                 onChange={onChange}
-                required
                 min="-90"
                 max="90"
                 className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:bg-white focus:text-gray-700 focus:border-slate-600 text-center"
@@ -224,7 +350,6 @@ export default function CreateListing() {
                 id="longitude"
                 value={longitude}
                 onChange={onChange}
-                required
                 min="-180"
                 max="180"
                 className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:bg-white focus:text-gray-700 focus:border-slate-600 text-center"
