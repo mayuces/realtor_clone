@@ -190,6 +190,7 @@ export default function EditListing() {
     const formDataCopy = {
       ...formData,
       imgUrls,
+      geolocation,
       timestamp: serverTimestamp(),
       userRef: auth.currentUser.uid,
     };
