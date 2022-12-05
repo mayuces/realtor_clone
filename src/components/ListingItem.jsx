@@ -20,7 +20,7 @@ export default function ListingItem({ listing, id, onEdit, onDelete }) {
         duration-150
         m-[10px]'
     >
-      <Link to={`/category${listing.type}/${id}`} className='contents'>
+      <Link to={`/category/${listing.type}/${id}`} className='contents'>
         <img 
           src={listing.imgUrls[0]} 
           alt=""

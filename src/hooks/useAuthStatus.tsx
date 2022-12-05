@@ -22,10 +22,8 @@ export function useAuthStatus(): AuthStatus {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         setLoggedIn(true);
-        console.log("loggedIn:" + loggedIn);
       }
       setCheckingStatus(false);
-      console.log("checkingStatus:" + checkingStatus);
     });
   }, [loggedIn, checkingStatus]);
 
