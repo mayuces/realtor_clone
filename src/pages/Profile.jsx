@@ -6,7 +6,6 @@ import { db } from '../firebase';
 import { collection, deleteDoc, doc, getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { FcHome } from 'react-icons/fc'
 import ListingItem from '../components/ListingItem.jsx';
-import { async } from '@firebase/util';
 
 export default function Profile() {
   const auth = getAuth();
@@ -34,7 +33,7 @@ export default function Profile() {
   }
 
   const onEdit = (listingID) => {
-    navigate(`/edis-listing/${listingID}`);
+    navigate(`/edit-listing/${listingID}`);
   };
 
   const onDelete = async (listingID) => {
