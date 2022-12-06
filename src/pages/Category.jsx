@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import Spinner from "../components/Spinner";
-import ListingItem from "../components/ListingItem";
+import { ListingItem } from "../components/ListingItem";
 import { useParams } from "react-router";
 
 export default function Category() {
@@ -93,7 +93,7 @@ export default function Category() {
                 <ListingItem
                   key={listing.id}
                   id={listing.id}
-                  listing={listing.data}
+                  listing={listing.data} 
                 />
               ))}
             </ul>

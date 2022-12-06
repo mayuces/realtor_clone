@@ -1,11 +1,17 @@
-import { doc, getDoc } from "firebase/firestore";
-import { useState } from "react";
+import { doc, DocumentData, getDoc } from "firebase/firestore";
+import { ChangeEvent, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { db } from "../firebase";
+import { Listing } from "../types/Listing";
 
-export default function Contact({ userRef, listing }) {
-  const [landlord, setLandlord] = useState(null);
+interface Props {
+  userRef: string,
+  listing: Listing,
+}
+
+export const Contact:React.FC <Props> = ({ userRef, listing }) => {
+  const [landlord, setLandlord] = useState<DocumentData | null>(null);
   const [message, setMessage] = useState("");
   useEffect(() => {
     async function getLandlord() {
@@ -19,8 +25,10 @@ export default function Contact({ userRef, listing }) {
     }
     getLandlord();
   }, [userRef]);
-  function onChange(e) {
-    setMessage(e.target.value);
+  function onChange(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    if (e) {
+      setMessage(e.target.value);
+    }
   }
   return (
     <>
@@ -33,7 +41,7 @@ export default function Contact({ userRef, listing }) {
             <textarea
               name="message"
               id="message"
-              rows="2"
+              rows={2}
               value={message}
               onChange={onChange}
               className="w-full px-4 py-2 text-xl text-gray-700 bg-white border border-gray-300 rounded transition duration-150 ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600"

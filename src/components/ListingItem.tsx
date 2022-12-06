@@ -2,8 +2,18 @@ import Moment from 'react-moment';
 import { Link } from "react-router-dom";
 import { MdLocationOn, MdEdit } from 'react-icons/md'
 import { FaTrash } from 'react-icons/fa'
+import { Listing } from '../types/Listing';
+import React from 'react';
 
-export default function ListingItem({ listing, id, onEdit, onDelete }) {
+type Props = {
+  listing: Listing,
+  id: number,
+  onEdit?: (id: number) => {},
+  onDelete?: (id: number) => {},
+}
+
+
+export const ListingItem:React.FC<Props> = ({ listing, id, onEdit, onDelete }) => {
   return (
     <li
       className='relative
@@ -21,18 +31,20 @@ export default function ListingItem({ listing, id, onEdit, onDelete }) {
         m-[10px]'
     >
       <Link to={`/category/${listing.type}/${id}`} className='contents'>
-        <img 
-          src={listing.imgUrls[0]} 
-          alt=""
-          className='h-[170px]
-            w-full
-            object-cover
-            hover:scale-105
-            transition-scale
-            duration-200
-            ease-in'
-            loading='lazy'
-        />
+        {listing.imgUrls && 
+          <img 
+            src={listing.imgUrls[0]} 
+            alt=""
+            className='h-[170px]
+              w-full
+              object-cover
+              hover:scale-105
+              transition-scale
+              duration-200
+              ease-in'
+              loading='lazy'
+          />
+        }
         <Moment 
           fromNow
           className='absolute
