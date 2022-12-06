@@ -5,7 +5,7 @@ import SignUp from './pages/SignUp';
 import Profile from './pages/Profile.jsx';
 import PrivateRoute from './components/PrivateRoute'
 import ForgotPassword from './pages/ForgotPassword';
-import Offers from './pages/Offers';
+import Offers from './pages/Offers.jsx';
 import Header from './components/Header';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
