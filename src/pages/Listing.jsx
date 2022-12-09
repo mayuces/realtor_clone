@@ -55,7 +55,7 @@ export default function Listing() {
   return (
     <main>
       <Swiper 
-        slidePerView={1} 
+        slideperview={1} 
         navigation 
         pagination={{ type: 'progressbar' }}
         effect='fade'

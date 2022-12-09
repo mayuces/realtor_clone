@@ -41,7 +41,7 @@ export default function Home() {
     fetchListings('offer',setOfferListings);
     fetchListings('sale',setSaleListings);
     fetchListings('rent',setRentListings);
-  }, [offerListings,rentListings, saleListings]);
+  }, []);
 
   
   return (

@@ -25,11 +25,13 @@ export const Contact:React.FC <Props> = ({ userRef, listing }) => {
     }
     getLandlord();
   }, [userRef]);
+
   function onChange(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     if (e) {
       setMessage(e.target.value);
     }
   }
+  
   return (
     <>
       {landlord !== null && (
