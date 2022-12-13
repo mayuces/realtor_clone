@@ -5,6 +5,9 @@
 2.Run npm install (or just npm i)  
 3.Run npm start 
 
+## DEMO Link
+https://realtor-clone-swart.vercel.app
+
 ![image](https://user-images.githubusercontent.com/65825450/206679452-5ac2d802-8538-456e-9647-01c3f9723386.png)
 
 
@@ -16,6 +19,8 @@ Project is created with:
 * TypeScript
 * TailwindCss
 * Firebase
+* React Router
+* React Hooks
 
 ### Features:
 
